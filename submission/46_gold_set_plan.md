@@ -3,16 +3,17 @@
 **Đầu bài:** 50.000 frame từ bốn camera SVM, ngân sách chọn 200 frame để review/gold. Đây là tình huống trên slide,
 **không phải** 50.000 frame có trong repo. Phân bổ đúng 200 ở `45_sampling_plan.csv` cho bốn camera, mỗi camera có
 normal và hard slice. “Gold set” ở đây là **kế hoạch tạo** reference sau kiểm chứng, không phải teaching reference
-ADASIND hoặc nhãn bạn vừa vẽ. Nếu cần, dùng `notebooks/day11-svm360-colab.ipynb` để thử tổng phân bổ; notebook
-không làm thay phần lý do.
+ADASIND hoặc nhãn bạn vừa vẽ.
 
 | camera_id | Hard case cần chọn | Vì sao dễ sai | Annotation space / calibration cần giữ | Cách review trước khi gọi là gold |
 |---|---|---|---|---|
-| front | TODO | TODO | TODO | TODO |
-| rear | TODO | TODO | TODO | TODO |
-| left | TODO | TODO | TODO | TODO |
-| right | TODO | TODO | TODO | TODO |
+| front | Vật nhỏ ở xa, phương tiện chồng lấp, mật độ giao thông cao và object gần vùng rìa/seam với camera left/right. | Object nhỏ dễ bị bỏ sót; che khuất dễ gây sai geometry/class; cùng một vật có thể xuất hiện ở vùng chồng camera. | Giữ `camera_id=front`, frame/timestamp gốc, ảnh fisheye gốc và calibration/version tương ứng. Ghi rõ annotation đang thực hiện trên ảnh fisheye gốc hay ảnh đã biến đổi; không trộn hai annotation space. | Review cả 20 normal và 30 hard. Một reviewer thứ hai kiểm độc lập class, box, attribute và seam case; bất đồng được ghi lại, đối chiếu guideline/ảnh gốc rồi QA quyết định trước khi đưa vào gold. |
+| rear | Vật nhỏ đi xa khỏi xe, che khuất, nhiều phương tiện sát nhau và object gần seam rear-left/rear-right. | Kích thước nhỏ và overlap làm tăng nguy cơ missing, duplicate hoặc box không tight; seam có thể khiến một physical object xuất hiện ở hai camera. | Giữ `camera_id=rear`, timestamp, raw frame, calibration và cùng annotation space/version với bộ gold. Không dùng box trên BEV để thay trực tiếp box đã vẽ trên raw fisheye. | Review riêng normal/hard của rear. Reviewer độc lập kiểm object count, class, geometry và các ca seam; chỉ chấp nhận gold sau khi disagreement được resolve và lưu decision/evidence. |
+| left | Object sát mép fisheye, méo hình mạnh, bị cắt bởi biên ảnh, che khuất và seam với front/rear. | Méo phối cảnh ở rìa làm box khó tight; truncated/occluded dễ bị nhầm; seam dễ bị hiểu nhầm thành duplicate. | Giữ `camera_id=left`, timestamp, ảnh gốc, calibration/version và thông tin annotation space. Nếu có transform sang BEV phải giữ mapping/calibration tương ứng và không đánh đồng geometry raw với BEV. | Reviewer thứ hai kiểm độc lập 20 normal + 30 hard, đặc biệt truncated/occluded và seam. Bất đồng được đưa QA/adjudication thay vì chọn nhãn theo đa số một cách tự động. |
+| right | Object sát rìa, méo fisheye, bị che, vật nhỏ và seam với front/rear. | Các ca ở rìa dễ sai geometry hoặc bỏ sót; cùng object có thể có hai quan sát hợp lệ từ hai camera khác nhau. | Giữ `camera_id=right`, timestamp/frame ID, raw fisheye, calibration/version và annotation-space metadata giống ba camera còn lại. | Review độc lập normal/hard của right; kiểm riêng các object ở rìa/seam. Chỉ promote thành gold sau khi reviewer và QA giải quyết disagreement bằng ảnh, guideline và calibration liên quan. |
 
-- Khi nào cần refresh gold set (đổi camera, calibration hoặc rule): TODO
-- Một ca seam/cross-camera cần policy và evidence trước khi ghép hai box: TODO
-- Vì sao peer agreement hoặc quality report trên ảnh một camera chưa chứng minh gold set đúng cho cả bốn camera: TODO
+- **Khi nào cần refresh gold set:** refresh hoặc tái-review khi thay camera/phần cứng hoặc vị trí lắp, thay calibration, thay pipeline transform/annotation space, hoặc thay guideline/rules_version có thể làm thay đổi class, geometry, attribute hay policy seam. Nếu chỉ đổi tên/file mà không ảnh hưởng dữ liệu hay rule thì không tự động suy ra cần relabel toàn bộ; phải đánh giá impact trước.
+
+- **Một ca seam/cross-camera cần policy và evidence trước khi ghép hai box:** giả sử cùng một `Car` xuất hiện đồng thời ở mép phải của camera `front` và mép trái của camera `right`. Hai box chưa tự động là `DUPLICATE`, cũng không được tự xóa một box hay nối track chỉ vì hình ảnh giống nhau. Reviewer phải kiểm timestamp đồng bộ, calibration xác định vùng nhìn chồng và policy output đích. Nếu output yêu cầu annotation theo từng camera, hai box có thể đều hợp lệ; nếu output yêu cầu identity cross-camera thì chỉ liên kết sau khi các điều kiện trên đủ bằng chứng.
+
+- **Vì sao peer agreement hoặc quality report trên ảnh một camera chưa chứng minh gold set đúng cho cả bốn camera:** mỗi camera có góc nhìn, vùng seam, mức méo, che khuất và calibration riêng. ADASIND của bài chỉ là dữ liệu một camera nên agreement hoặc metric trên tập đó không xác nhận được chất lượng của `front/rear/left/right`. Gold set phải được review riêng từng camera và có xử lý riêng các ca cross-camera trước khi được xem là reference đã kiểm chứng.

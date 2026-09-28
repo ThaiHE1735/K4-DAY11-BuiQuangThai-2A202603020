@@ -1,0 +1,9 @@
+round: rework
+slice: B2-center
+sha256: c2469df8998760350ccb55aeeb91a2c5ce0d07ba0b5ca10c4a889456e03b85fe
+code: C246-9DF8
+locked_at: 2026-09-28T19:30:06+07:00
+shapes: box=24, polygon=14
+prefill_kept: 0
+prefill_edited: 4
+new: 20

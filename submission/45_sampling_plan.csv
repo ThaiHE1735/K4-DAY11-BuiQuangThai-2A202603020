@@ -1,9 +1,9 @@
 camera_id,slice_type,frames,risk,rationale
-front,normal,,TODO,TODO
-front,hard,,TODO,TODO
-rear,normal,,TODO,TODO
-rear,hard,,TODO,TODO
-left,normal,,TODO,TODO
-left,hard,,TODO,TODO
-right,normal,,TODO,TODO
-right,hard,,TODO,TODO
+front,normal,20,baseline_front,"Giữ mẫu điều kiện bình thường để có baseline khi so với hard case; chọn từ nhiều cảnh khác nhau, không lấy các frame liên tiếp như các ca độc lập."
+front,hard,30,small_occluded_dense,"Ưu tiên vật nhỏ, che khuất, mật độ phương tiện cao hoặc box khó phân biệt; lấy nhiều hard frame hơn normal để tăng khả năng phát hiện lỗi."
+rear,normal,20,baseline_rear,"Giữ baseline riêng cho camera rear và trải mẫu trên nhiều đoạn/cảnh khác nhau."
+rear,hard,30,occlusion_small_objects,"Ưu tiên các ca vật bị che, kích thước nhỏ hoặc khó tách object; tránh chọn nhiều frame liền nhau của cùng một tình huống."
+left,normal,20,baseline_left,"Giữ baseline riêng cho camera left để so sánh với các ca méo rìa và seam."
+left,hard,30,fisheye_edge_seam,"Ưu tiên vật ở vùng méo fisheye, gần rìa hoặc seam và các ca khó xác định geometry/class."
+right,normal,20,baseline_right,"Giữ baseline riêng cho camera right và bảo đảm dữ liệu đến từ nhiều cảnh độc lập."
+right,hard,30,fisheye_edge_seam,"Ưu tiên vật ở vùng méo rìa, seam, che khuất hoặc mật độ cao; dùng để tìm ca cần review sâu hơn."
